@@ -14,14 +14,14 @@ Option to export view header or not.
 --------------------------------------------------------------------------------
                                 Installations
 --------------------------------------------------------------------------------
-Dependencies:
-    1. jquery_update
-    2. views
+1. Dependencies:
+    - jquery_update
+    - views
     
-Installations:
-    1. Extract the zip file of the module.
-    2. Upload the entire directory and all its contents to your modules directory (sites/all/modules/vms_table_to_excel).
-    3. Go to Admin -> Modules, and enable Views table to excel(xls/xlsx).
+2. Installations:
+    - Extract the zip file of the module.
+    - Upload the entire directory and all its contents to your modules directory (sites/all/modules/vms_table_to_excel).
+    - Go to Admin -> Modules, and enable Views table to excel(xls/xlsx).
 
 --------------------------------------------------------------------------------
                                 Configurations

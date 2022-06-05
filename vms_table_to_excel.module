@@ -1,0 +1,107 @@
+<?php
+// vms_table_to_excel
+/**
+ * Implements hook_permission().
+ */
+function vms_table_to_excel_permission() {
+    return array(
+    'administer vms_table_to_excel' => array(
+        'title' => t('Administer vms_table_to_excel'),
+        'description' => t('') ,
+      ) ,
+    );
+}
+/**
+ * Implements hook_menu().
+ */
+function vms_table_to_excel_menu() {
+    $items = array();
+    $items['vms_tte/update-tte-config'] = array(
+        'title' => 'Update config',
+        'page callback' => '_vms_table_to_excel_ajax_callback',
+        'access arguments' => array('administer vms_table_to_excel'),  
+        'type' => MENU_CALLBACK
+    );
+    return $items;
+}
+// Ajax callback update config
+function _vms_table_to_excel_ajax_callback(){
+    if(isset($_POST['tte_id']) && isset($_POST['tte_value'])){
+        $vars = variable_get('vms_table_to_excel');
+        if(!isset($vars)){
+            $vars = array();
+        }
+        $vars[$_POST['tte_id']] = $_POST['tte_value'];
+        variable_set('vms_table_to_excel', $vars);
+        return drupal_json_output(true);
+    }else{
+        return drupal_json_output(false);
+    }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function vms_table_to_excel_form_alter(&$form, &$form_state, $form_id) {
+    if($form_id == 'views_ui_edit_display_form' && isset($form['options']['#help_topic']) && $form['options']['#help_topic'] == 'style-table'){
+        $tte_id = 'view_'.$form_state['view']->vid.'-'.$form_state['view']->current_display;
+        $vms_tte_configs = variable_get('vms_table_to_excel');
+        if(isset($vms_tte_configs)){
+            $tte_config = explode(',', $vms_tte_configs[$tte_id]);
+            $default_value_xlsx = $tte_config[0];
+            $default_value_xls = $tte_config[1];
+            $default_value_header = $tte_config[2];
+        }else{
+            $default_value_xlsx = 0;
+            $default_value_xls = 0;
+        }
+        // dsm($form['options']['style_options']);
+        $form['options']['style_options']['vms_table_to_excel'] = array(
+            '#title' => t('VMS Export Table to Excel') ,
+            '#type' => 'fieldset',
+            '#weight' => -10
+        );
+        $form['options']['style_options']['vms_table_to_excel']['vms_table_to_excel_xlsx'] = array(
+            '#title' => t(' Export type .xlsx'),
+            '#type' => 'checkbox',
+            '#default_value' => $default_value_xlsx,
+        );
+        $form['options']['style_options']['vms_table_to_excel']['vms_table_to_excel_xls'] = array(
+            '#title' => t(' Export type .xls'),
+            '#type' => 'checkbox',
+            '#default_value' => $default_value_xls
+        );
+        $form['options']['style_options']['vms_table_to_excel']['vms_table_to_excel_header'] = array(
+            '#title' => t(' Export view header'),
+            '#type' => 'checkbox',
+            '#default_value' => $default_value_header
+        );
+        drupal_add_js(array('tte_id' => $tte_id), array('type' => 'setting'));
+        drupal_add_js(drupal_get_path('module', 'vms_table_to_excel') . '/js/vms_table_to_excel_config.js');
+    }
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function vms_table_to_excel_views_pre_view(&$view, &$display_id, &$args) {
+    $tte_id = 'view_'.$view->vid.'-'.$display_id;
+    $vms_tte_configs = variable_get('vms_table_to_excel');
+    // dsm($vms_tte_configs);
+    if(isset($vms_tte_configs) && isset($vms_tte_configs[$tte_id])){
+        $tte_config = explode(',', $vms_tte_configs[$tte_id]);
+        $xlsx_opt = $tte_config[0];
+        $xls_opt = $tte_config[1];
+        $header_opt = $tte_config[2];
+        if($xlsx_opt == '1' || $xls_opt == '1'){
+            drupal_add_js(array('vms_xlsx_opt' => $xlsx_opt), array('type' => 'setting'));
+            drupal_add_js(array('vms_xls_opt' => $xls_opt), array('type' => 'setting'));
+            drupal_add_js(array('vms_header_opt' => $header_opt), array('type' => 'setting'));
+            drupal_add_js(array('xls_icon_path' => drupal_get_path('module', 'vms_table_to_excel') . '/icons/xls.png'), array('type' => 'setting'));
+            drupal_add_js(array('xlsx_icon_path' => drupal_get_path('module', 'vms_table_to_excel') . '/icons/xlsx.png'), array('type' => 'setting'));
+            drupal_add_js(drupal_get_path('module', 'vms_table_to_excel') . '/js/xlsx.core.min.js');
+            drupal_add_js(drupal_get_path('module', 'vms_table_to_excel') . '/js/vms_table_to_excel.js');
+        }
+    }
+    
+}

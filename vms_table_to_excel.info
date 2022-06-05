@@ -1,0 +1,8 @@
+name = Views table to excel(xls/xlsx)
+description = Export views table to excel(xls/xlsx)
+package = VMS.Dev
+core = 7.x
+dependencies[] = jquery_update
+dependencies[] = views
+
+version = "7.x-1.0"
